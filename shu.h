@@ -20,12 +20,18 @@ SHU is a series of single header C libraries. It includes
 essential type definitions and macros which all of the
 shu... library will use.
 
+It does not requires any implementation like libraries do.
+So you can just include it without any other operation.
+
 So every library header will try to include this file as
 "shu.h". You can define the macro 'SHU' as ".../shu.h" to
 tell where to find it.
 
 In my opinion this file should be used by your own projects
 too to have easy to use standards.
+
+See [Code-Juliett](https://github.com/omerfuyar/Code-Juliett)
+for more practical use of the system.
 */
 
 #pragma once
