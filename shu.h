@@ -47,14 +47,24 @@ for more practical use of the system.
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 700
 #endif
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef SHU_LOG_STREAM
+#define SHU_LOG_STREAM stderr
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdbool.h>
-#include <float.h>
+#include <stdio.h>
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -91,7 +101,12 @@ typedef enum SHUResult
 {
     SHUResult_Ok = 0,
     SHUResult_Pending,
-    SHUResult_ErrBadStructData,
+    SHUResult_Err,
+    SHUResult_ErrAssertion,
+    SHUResult_ErrNotFound,
+    SHUResult_ErrBadData,
+    SHUResult_ErrInternal,
+    SHUResult_ErrIndexOutOfBounds,
     SHUResult_ErrNullPointer,
     SHUResult_ErrNetwork,
     SHUResult_ErrPrivileges,
@@ -109,9 +124,46 @@ typedef const struct SHUSliceView
     const usz size;
 } SHUSliceView;
 
+/// @brief Create a slice from its contents.
+/// @param data Data which this slice owns.
+/// @param size Size of the data of this slice.
 #define cs(data, size) \
     (SHUSlice) { .data = data, .size = size }
+
+/// @brief Create a slice view from a slice.
+/// @param slice Slice to create a view of.
 #define csv(slice) \
     (SHUSliceView) { .data = slice.data, .size = slice.size }
+
+/// @brief Log macro for all of the shu... libraries.
+/// @param terminate Terminates the application if the code is other than 0.
+/// @param header Header to enter to log as to stream.
+/// @param format Formatted message to log.
+/// @param ... Format parameters.
+#define SHU_Log(terminate, header, format, ...)                                 \
+    do                                                                          \
+    {                                                                           \
+        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[%s]\x1b[0m : " format "\n", \
+                __FILE__, __LINE__, __func__, header, ##__VA_ARGS__);           \
+                                                                                \
+        if (terminate)                                                          \
+        {                                                                       \
+            exit(terminate);                                                    \
+        }                                                                       \
+    } while (0)
+
+#define SHU_LogInfo(format, ...) SHU_Log(0, "\x1b[32mINFO\x1b[0m", format, ##__VA_ARGS__)
+
+#define SHU_LogWarning(format, ...) SHU_Log(0, "\x1b[33mWARNING\x1b[0m", format, ##__VA_ARGS__)
+
+#define SHU_LogError(code, format, ...) SHU_Log((code), "\x1b[31mERROR\x1b[0m", format, ##__VA_ARGS__)
+
+#define SHU_Assert(condition, format, ...)                                                  \
+    if (!(condition))                                                                       \
+    {                                                                                       \
+        SHU_Log(SHUResult_ErrAssertion, "\x1b[35mASSERTION\x1b[0m", format, ##__VA_ARGS__); \
+    }
+
+#define SHU_AssertNullPtr(ptr) SHU_Assert((ptr) != NULL, "Null pointer: " #ptr)
 
 #endif // SHU_HEADER
