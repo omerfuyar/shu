@@ -37,12 +37,19 @@ implementation is finished in one unit.
 
 See [Code-Juliett](https://github.com/omerfuyar/Code-Juliett)
 for more practical use of the system.
+
+Configurations:
+#define SHU_IMPLEMENTATION : to implement shu... libraries
+#define SHU_LOG_STREAM <stream> : changes where to log for SHU_Log and its derivatives
+#define SHU_NO_LOG : disables logging for SHU_Log and its derivatives
 */
 
 #ifndef SHU_HEADER
 #define SHU_HEADER
 
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 700
@@ -113,8 +120,6 @@ typedef enum SHUResult
     SHUResult_ErrPrivileges,
 } SHUResult;
 
-#define SHUResultString(result)
-
 /// @brief An attribute to warn an unused return value used as 'SHUWUR SHUResult foo(...)'
 #define SHUWUR __attribute__((warn_unused_result))
 
@@ -143,6 +148,7 @@ typedef const struct SHUSliceView
 
 #define cs0 cs(NULL, 0)
 
+#ifndef SHU_NO_LOG
 /// @brief Log macro for all of the shu... libraries.
 /// @param terminate Terminates the application if the code is other than 0.
 /// @param header Header to enter to log as to stream.
@@ -159,6 +165,7 @@ typedef const struct SHUSliceView
             exit(terminate);                                                    \
         }                                                                       \
     } while (0)
+#endif
 
 #define SHU_LogInfo(format, ...) SHU_Log(0, "\x1b[32mINFO\x1b[0m", format, ##__VA_ARGS__)
 
@@ -175,5 +182,16 @@ typedef const struct SHUSliceView
 #define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
 
 #define SHU_CheckPanicNullPointer(ptr) SHU_Assert(ptr != NULL, "Pointer variable " #ptr " is NULL")
+
+#define SHU_CheckReturn(result, ...)  \
+    do                                \
+    {                                 \
+        SHUResult ___shures = result; \
+        if (___shures)                \
+        {                             \
+            __VA_ARGS__               \
+            return ___shures;         \
+        }                             \
+    } while (0)
 
 #endif // SHU_HEADER
