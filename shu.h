@@ -173,4 +173,6 @@ typedef const struct SHUSliceView
 
 #define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
 
+#define SHU_CheckPanicNullPointer(ptr) SHU_Assert(ptr != NULL, "Pointer variable " #ptr " is NULL")
+
 #endif // SHU_HEADER
