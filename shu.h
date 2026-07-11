@@ -112,6 +112,11 @@ typedef enum SHUResult
     SHUResult_ErrPrivileges,
 } SHUResult;
 
+#define SHUResultString(result)
+
+/// @brief An attribute to warn an unused return value used as 'SHUWUR SHUResult foo(...)'
+#define SHUWUR __attribute__((warn_unused_result))
+
 typedef struct SHUSlice
 {
     u8 *data;
@@ -127,13 +132,15 @@ typedef const struct SHUSliceView
 /// @brief Create a slice from its contents.
 /// @param data Data which this slice owns.
 /// @param size Size of the data of this slice.
-#define cs(data, size) \
-    (SHUSlice) { .data = data, .size = size }
+#define cs(sliceData, sliceSize) \
+    (SHUSlice) { .data = sliceData, .size = sliceSize }
 
 /// @brief Create a slice view from a slice.
 /// @param slice Slice to create a view of.
 #define csv(slice) \
     (SHUSliceView) { .data = slice.data, .size = slice.size }
+
+#define cs0 cs(NULL, 0)
 
 /// @brief Log macro for all of the shu... libraries.
 /// @param terminate Terminates the application if the code is other than 0.
@@ -164,6 +171,6 @@ typedef const struct SHUSliceView
         SHU_Log(SHUResult_ErrAssertion, "\x1b[35mASSERTION\x1b[0m", format, ##__VA_ARGS__); \
     }
 
-#define SHU_AssertNullPtr(ptr) SHU_Assert((ptr) != NULL, "Null pointer: " #ptr)
+#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
 
 #endif // SHU_HEADER
