@@ -112,6 +112,7 @@ typedef enum SHUResult
     SHUResult_ErrAssertion,
     SHUResult_ErrNotFound,
     SHUResult_ErrBadData,
+    SHUResult_ErrFile,
     SHUResult_ErrInternal,
     SHUResult_ErrAllocation,
     SHUResult_ErrIndexOutOfBounds,
