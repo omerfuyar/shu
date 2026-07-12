@@ -71,6 +71,7 @@ Configurations:
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <stdio.h>
 
 typedef int8_t i8;
