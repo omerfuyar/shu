@@ -125,13 +125,13 @@ typedef enum SHUResult
 
 typedef struct SHUSlice
 {
-    u8 *data;
+    void *data;
     usz size;
 } SHUSlice;
 
 typedef const struct SHUSliceView
 {
-    const u8 *const data;
+    const void *const data;
     const usz size;
 } SHUSliceView;
 
