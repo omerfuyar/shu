@@ -150,6 +150,11 @@ typedef const struct SHUSliceView
 
 #define cs0 cs(NULL, 0)
 
+/// @brief Selects the minimum of two values.
+#define SHUMin(a, b) ((a) < (b) ? (a) : (b))
+/// @brief Selects the maximum of two values.
+#define SHUMax(a, b) ((a) > (b) ? (a) : (b))
+
 #ifndef SHU_NO_LOG
 /// @brief Log macro for all of the shu... libraries.
 /// @param terminate Terminates the application if the code is other than 0.
