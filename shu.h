@@ -187,9 +187,9 @@ typedef const struct SHUSliceView
         SHU_Log(SHUResult_ErrAssertion, "\x1b[35mASSERTION\x1b[0m", format, ##__VA_ARGS__); \
     }
 
-#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
+#define SHU_AssertNullPointer(ptr) SHU_Assert(ptr != NULL, "Pointer variable " #ptr " is NULL")
 
-#define SHU_CheckPanicNullPointer(ptr) SHU_Assert(ptr != NULL, "Pointer variable " #ptr " is NULL")
+#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
 
 #define SHU_CheckReturn(result, ...)  \
     do                                \
