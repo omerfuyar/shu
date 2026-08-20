@@ -105,6 +105,7 @@ typedef __float128 f128;
 
 typedef size_t usz;
 
+/// @brief Common result/error code returned by shu... functions. SHUResult_Ok (0) means success; every other value is truthy and can be used directly as a boolean failure check (eg. `if (SHU_SomeFunction(...))`).
 typedef enum SHUResult
 {
     SHUResult_Ok = 0,
@@ -126,12 +127,14 @@ typedef enum SHUResult
 /// @brief An attribute to warn an unused return value used as 'SHUWUR SHUResult foo(...)'
 #define SHUWUR __attribute__((warn_unused_result))
 
+/// @brief A pointer and size pair describing a span of writable memory. Does not own the memory it points to, use it instead of separate (data, size) parameters. See cs and cs0.
 typedef struct SHUSlice
 {
     void *data;
     usz size;
 } SHUSlice;
 
+/// @brief A read-only view over a span of memory. Same shape as SHUSlice but neither the pointer nor the pointee can be written through it. See csv.
 typedef const struct SHUSliceView
 {
     const void *const data;
@@ -149,6 +152,7 @@ typedef const struct SHUSliceView
 #define csv(slice) \
     (SHUSliceView) { .data = slice.data, .size = slice.size }
 
+/// @brief A zero slice.
 #define cs0 cs(NULL, 0)
 
 /// @brief Selects the minimum of two values.
@@ -175,22 +179,47 @@ typedef const struct SHUSliceView
     } while (0)
 #endif
 
+/// @brief Logs an informational message. Never terminates the process.
+/// @param format Formatted message to log.
+/// @param ... Format parameters.
 #define SHU_LogInfo(format, ...) SHU_Log(0, "\x1b[32mINFO\x1b[0m", format, ##__VA_ARGS__)
 
+/// @brief Logs a warning message. Never terminates the process.
+/// @param format Formatted message to log.
+/// @param ... Format parameters.
 #define SHU_LogWarning(format, ...) SHU_Log(0, "\x1b[33mWARNING\x1b[0m", format, ##__VA_ARGS__)
 
+/// @brief Logs an error message. Terminates the process with exit code `code` if code is not SHUResult_Ok (0); logs and continues otherwise.
+/// @param code Result/error code being reported. Doubles as the process exit code, so pass SHUResult_Ok to log without terminating.
+/// @param format Formatted message to log.
+/// @param ... Format parameters.
 #define SHU_LogError(code, format, ...) SHU_Log((code), "\x1b[31mERROR\x1b[0m", format, ##__VA_ARGS__)
 
+/// @brief Logs and terminates the process (exit code SHUResult_ErrAssertion) if condition is false.
+/// @param condition Condition that must hold. Nothing happens if it's true.
+/// @param format Formatted message to log if the condition fails.
+/// @param ... Format parameters.
 #define SHU_Assert(condition, format, ...)                                                  \
     if (!(condition))                                                                       \
     {                                                                                       \
         SHU_Log(SHUResult_ErrAssertion, "\x1b[35mASSERTION\x1b[0m", format, ##__VA_ARGS__); \
     }
 
-#define SHU_AssertNullPointer(ptr) SHU_Assert(ptr != NULL, "Pointer variable " #ptr " is NULL")
+/// @brief Terminates the process if ptr is NULL.
+/// @param ptr Pointer variable that must not be NULL.
+#define SHU_AssertNullPointer(ptr) SHU_Assert((ptr) != NULL, "Pointer variable " #ptr " is NULL.")
 
-#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok", (result))
+/// @brief Terminates the process if slice is invalid.
+/// @param slice Slice variable that must not be invalid.
+#define SHU_AssertSlice(slice) SHU_Assert((slice).data != NULL && (slice).size != 0, "Slice variable " #slice " is invalid.")
 
+/// @brief Terminates the process if result is not SHUResult_Ok. Use at call sites where a failure is unexpected and unrecoverable.
+/// @param result Expression of type SHUResult to check.
+#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok.", (result))
+
+/// @brief Evaluates result once and, if it is not SHUResult_Ok, runs the optional cleanup statements and returns it from the enclosing function.
+/// @param result Expression of type SHUResult to check.
+/// @param ... Optional cleanup statements to run before returning (eg. freeing resources). Do not forget semicolons.
 #define SHU_CheckReturn(result, ...)  \
     do                                \
     {                                 \
