@@ -110,6 +110,7 @@ typedef enum SHUResult
 {
     SHUResult_Ok = 0,
     SHUResult_Pending,
+    SHUResult_Finished,
     SHUResult_Err,
     SHUResult_ErrAssertion,
     SHUResult_ErrNotFound,
