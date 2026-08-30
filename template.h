@@ -32,6 +32,14 @@
 
 #ifdef SHU_IMPLEMENTATION
 
+#ifdef _WIN32
+#else
+#endif
+
+#pragma region Internals
+
+#pragma endregion Internals
+
 #endif
 
 #pragma endregion Definitions
