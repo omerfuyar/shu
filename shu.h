@@ -16,32 +16,33 @@
 \ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `'\ `' /
  `--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'`--'
 
-SHU is a series of (somewhat) single header C libraries.
+SHU is series of (somewhat) single header C libraries.
 It includes essential type definitions and macros which
 all of the shu... library will use.
 
-It does not requires any implementation like libraries do.
-So you can just include it without any other operation.
+It does not require any implementation like libraries do.
+So you can just include it without any other operation or
+compilation unit.
 
-So every library header will try to include this file as
-"shu.h". You can define the macro 'SHU' as ".../shu.h" to
-tell where to find it. Or include it directly.
+See template.h for more information about how this file is
+included.
 
 In my opinion this file should be used by your own projects
 too to have easy to use standards.
 
-The recommendation is to create a shu.c file and define
+My recommendation is to place (with git submodules) all shu...
+libraries you use, create a shu.c file and define
 'SHU_IMPLEMENTATION' at start, then include this file and
 include all the libraries you need. So in one file all the
-implementation is finished in one unit.
+implementation is finished, in one unit.
 
 See [Code-Juliett](https://github.com/omerfuyar/Code-Juliett)
 for more practical use of the system.
 
 Configurations:
 #define SHU_IMPLEMENTATION : to implement shu... libraries
-#define SHU_LOG_STREAM <stream> : changes where to log for SHU_Log and its derivatives
-#define SHU_NO_LOG : disables logging for SHU_Log and its derivatives
+#define SHU_LOG_STREAM <stream> : changes where to log for SHU_Log and its derivatives, default to stderr.
+#define SHU_NO_LOG : disables all logging for SHU_Log and its derivatives
 */
 
 #ifndef SHU_HEADER
