@@ -157,6 +157,9 @@ typedef const struct SHUSliceView
 /// @brief A zero slice.
 #define cs0 cs(NULL, 0)
 
+/// @brief A zero slice view.
+#define csv0 csv(cs0);
+
 /// @brief Selects the minimum of two values.
 #define SHUMin(a, b) ((a) < (b) ? (a) : (b))
 /// @brief Selects the maximum of two values.
