@@ -28,7 +28,7 @@ See template.h for more information about how this file is
 included.
 
 In my opinion this file should be used by your own projects
-too to have easy to use standards.
+too to have easy to use standard conventions.
 
 My recommendation is to place (with git submodules) all shu...
 libraries you use, create a shu.c file and define
@@ -40,9 +40,10 @@ See [Code-Juliett](https://github.com/omerfuyar/Code-Juliett)
 for more practical use of the system.
 
 Configurations:
-#define SHU_IMPLEMENTATION : to implement shu... libraries
+#define SHU_IMPLEMENTATION : to implement shu... libraries.
 #define SHU_LOG_STREAM <stream> : changes where to log for SHU_Log and its derivatives, default to stderr.
-#define SHU_NO_LOG : disables all logging for SHU_Log and its derivatives
+#define SHU_NO_LOG : disables all logging,  for SHU_Log and its derivatives.
+#define SHU_NO_ASSERT : disables all assertions for SHU_Assert and its derivatives.
 */
 
 #ifndef SHU_HEADER
@@ -107,6 +108,7 @@ typedef __float128 f128;
 typedef size_t usz;
 
 /// @brief Common result/error code returned by shu... functions. SHUResult_Ok (0) means success; every other value is truthy and can be used directly as a boolean failure check (eg. `if (SHU_SomeFunction(...))`).
+/// @note See assertion SHU_Assert... functions for assertions.
 typedef enum SHUResult
 {
     SHUResult_Ok = 0,
@@ -200,32 +202,33 @@ typedef const struct SHUSliceView
 /// @param ... Format parameters.
 #define SHU_LogError(code, format, ...) SHU_Log((code), "\x1b[31mERROR\x1b[0m", format, ##__VA_ARGS__)
 
+#ifndef SHU_NO_ASSERT
 /// @brief Logs and terminates the process (exit code SHUResult_ErrAssertion) if condition is false.
 /// @param condition Condition that must hold. Nothing happens if it's true.
 /// @param format Formatted message to log if the condition fails.
 /// @param ... Format parameters.
-#define SHU_Assert(condition, format, ...)                                                  \
-    if (!(condition))                                                                       \
-    {                                                                                       \
-        SHU_Log(SHUResult_ErrAssertion, "\x1b[35mASSERTION\x1b[0m", format, ##__VA_ARGS__); \
+#define SHU_Assert(condition, format, ...)                                             \
+    if (!(condition))                                                                  \
+    {                                                                                  \
+        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : " format "\n", \
+                __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
+        exit(SHUResult_ErrAssertion);                                                  \
     }
+#endif
 
 /// @brief Terminates the process if ptr is NULL.
 /// @param ptr Pointer variable that must not be NULL.
 #define SHU_AssertNullPointer(ptr) SHU_Assert((ptr) != NULL, "Pointer variable " #ptr " is NULL.")
 
-/// @brief Terminates the process if slice is invalid.
-/// @param slice Slice variable that must not be invalid.
-#define SHU_AssertSlice(slice) SHU_Assert((slice).data != NULL && (slice).size != 0, "Slice variable " #slice " is invalid.")
-
 /// @brief Terminates the process if result is not SHUResult_Ok. Use at call sites where a failure is unexpected and unrecoverable.
 /// @param result Expression of type SHUResult to check.
-#define SHU_CheckPanic(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok.", (result))
+#define SHU_AssertResult(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok.", (result))
 
 /// @brief Evaluates result once and, if it is not SHUResult_Ok, runs the optional cleanup statements and returns it from the enclosing function.
 /// @param result Expression of type SHUResult to check.
 /// @param ... Optional cleanup statements to run before returning (eg. freeing resources). Do not forget semicolons.
-#define SHU_CheckReturn(result, ...)  \
+/// @note This macro must be used inside a function that returns SHUResult.
+#define SHU_ReturnResult(result, ...) \
     do                                \
     {                                 \
         SHUResult ___shures = result; \
