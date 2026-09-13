@@ -18,14 +18,11 @@
 
 SHU is series of (somewhat) single header C libraries.
 It includes essential type definitions and macros which
-all of the shu... library will use.
+all of the shu... libraries are using.
 
 It does not require any implementation like libraries do.
 So you can just include it without any other operation or
 compilation unit.
-
-See template.h for more information about how this file is
-included.
 
 In my opinion this file should be used by your own projects
 too to have easy to use standard conventions.
@@ -35,6 +32,9 @@ libraries you use, create a shu.c file and define
 'SHU_IMPLEMENTATION' at start, then include this file and
 include all the libraries you need. So in one file all the
 implementation is finished, in one unit.
+
+Most likely any compilation unit including this file will
+be compiled in C23.
 
 See [Code-Juliett](https://github.com/omerfuyar/Code-Juliett)
 for more practical use of the system.
@@ -135,6 +135,24 @@ typedef enum SHUResult
     SHUResult_ErrPrivileges,
 } SHUResult;
 
+/// @brief String of the result value. Be aware that parameter result is evaluated for more than 1 times in this expression.
+#define SHUResult_String(result) ((result) == SHUResult_Ok                    ? "SHUResult_Ok"                  \
+                                  : (result) == SHUResult_Pending             ? "SHUResult_Pending"             \
+                                  : (result) == SHUResult_Finished            ? "SHUResult_Finished"            \
+                                  : (result) == SHUResult_Err                 ? "SHUResult_Err"                 \
+                                  : (result) == SHUResult_ErrAssertion        ? "SHUResult_ErrAssertion"        \
+                                  : (result) == SHUResult_ErrNotFound         ? "SHUResult_ErrNotFound"         \
+                                  : (result) == SHUResult_ErrBadData          ? "SHUResult_ErrBadData"          \
+                                  : (result) == SHUResult_ErrFile             ? "SHUResult_ErrFile"             \
+                                  : (result) == SHUResult_ErrInternal         ? "SHUResult_ErrInternal"         \
+                                  : (result) == SHUResult_ErrAllocation       ? "SHUResult_ErrAllocation"       \
+                                  : (result) == SHUResult_ErrOverflow         ? "SHUResult_ErrOverflow"         \
+                                  : (result) == SHUResult_ErrIndexOutOfBounds ? "SHUResult_ErrIndexOutOfBounds" \
+                                  : (result) == SHUResult_ErrNullPointer      ? "SHUResult_ErrNullPointer"      \
+                                  : (result) == SHUResult_ErrNetwork          ? "SHUResult_ErrNetwork"          \
+                                  : (result) == SHUResult_ErrPrivileges       ? "SHUResult_ErrPrivileges"       \
+                                                                              : "UNKNOWN_SHU_RESULT") //! dont forget to add here
+
 /// @brief An attribute to warn an unused return value used as 'SHUWUR SHUResult foo(...)'
 #define SHUWUR __attribute__((warn_unused_result))
 
@@ -145,7 +163,7 @@ typedef struct SHUSlice
     usz size;
 } SHUSlice;
 
-/// @brief A read-only view over a span of memory. Same shape as SHUSlice but neither the pointer nor the pointee can be written through it. See csv.
+/// @brief A read-only view over a span of memory. Same shape as SHUSlice but neither the pointer nor the pointer can be written through it. See csv.
 typedef const struct SHUSliceView
 {
     const void *const data;
@@ -169,9 +187,9 @@ typedef const struct SHUSliceView
 /// @brief A zero slice view.
 #define csv0 csv(cs0);
 
-/// @brief Selects the minimum of two values.
+/// @brief Selects the minimum of two values. Be aware that a and b is evaluated for more than 1 times in this expression.
 #define SHUMin(a, b) ((a) < (b) ? (a) : (b))
-/// @brief Selects the maximum of two values.
+/// @brief Selects the maximum of two values. Be aware that a and b is evaluated for more than 1 times in this expression.
 #define SHUMax(a, b) ((a) > (b) ? (a) : (b))
 
 #ifndef SHU_NO_LOG
