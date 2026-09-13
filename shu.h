@@ -43,7 +43,14 @@ Configurations:
 #define SHU_IMPLEMENTATION : to implement shu... libraries.
 #define SHU_LOG_STREAM <stream> : changes where to log for SHU_Log and its derivatives, default to stderr.
 #define SHU_NO_LOG : disables all logging,  for SHU_Log and its derivatives.
-#define SHU_NO_ASSERT : disables all assertions for SHU_Assert and its derivatives.
+#define SHU_NO_ASSERT : disables all assertions for SHU_Assert and its derivatives. Define it on release builds to have slight performance boost.
+
+Be aware that all shu... libraries use assertions for
+unrecoverable, contract validation errors Like null values,
+out of range indexing, invalid parameter data etc.
+
+Again all shu... libraries use SHUReturn for recoverable,
+external errors like syscall errors, hardware issues etc.
 */
 
 #ifndef SHU_HEADER
