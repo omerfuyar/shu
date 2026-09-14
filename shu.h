@@ -28,10 +28,11 @@ In my opinion this file should be used by your own projects
 too to have easy to use standard conventions.
 
 My recommendation is to place (with git submodules) all shu...
-libraries you use, create a shu.c file and define
-'SHU_IMPLEMENTATION' at start, then include this file and
-include all the libraries you need. So in one file all the
-implementation is finished, in one unit.
+libraries you use in a directory, create a shu.c file and
+define 'SHU_IMPLEMENTATION' at start, then include this file
+and include all the libraries you need. So in one file all the
+implementation is finished, in one unit. Plus, that way you
+are not exposed to internals of libraries.
 
 Most likely any compilation unit including this file will
 be compiled in C23.
