@@ -199,16 +199,16 @@ typedef const struct SHUSliceView
 /// @param header Header to enter to log as to stream.
 /// @param format Formatted message to log.
 /// @param ... Format parameters.
-#define SHU_Log(terminate, header, format, ...)                                 \
-    do                                                                          \
-    {                                                                           \
-        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[%s]\x1b[0m : " format "\n", \
-                __FILE__, __LINE__, __func__, header, ##__VA_ARGS__);           \
-                                                                                \
-        if (terminate)                                                          \
-        {                                                                       \
-            exit(terminate);                                                    \
-        }                                                                       \
+#define SHU_Log(terminate, header, format, ...)                               \
+    do                                                                        \
+    {                                                                         \
+        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[%s]\x1b[0m : %s\n",       \
+                __FILE__, __LINE__, __func__, header, format, ##__VA_ARGS__); \
+                                                                              \
+        if (terminate)                                                        \
+        {                                                                     \
+            exit(terminate);                                                  \
+        }                                                                     \
     } while (0)
 #endif
 
@@ -233,12 +233,12 @@ typedef const struct SHUSliceView
 /// @param condition Condition that must hold. Nothing happens if it's true.
 /// @param format Formatted message to log if the condition fails.
 /// @param ... Format parameters.
-#define SHU_Assert(condition, format, ...)                                             \
-    if (!(condition))                                                                  \
-    {                                                                                  \
-        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : " format "\n", \
-                __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
-        exit(SHUResult_ErrAssertion);                                                  \
+#define SHU_Assert(condition, format, ...)                                     \
+    if (!(condition))                                                          \
+    {                                                                          \
+        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : %s\n", \
+                __FILE__, __LINE__, __func__, format, ##__VA_ARGS__);          \
+        exit(SHUResult_ErrAssertion);                                          \
     }
 #endif
 
