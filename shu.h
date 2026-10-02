@@ -210,6 +210,8 @@ typedef const struct SHUSliceView
             exit(terminate);                                                    \
         }                                                                       \
     } while (0)
+#else
+#define SHU_Log(...)
 #endif
 
 /// @brief Logs an informational message. Never terminates the process.
@@ -240,6 +242,8 @@ typedef const struct SHUSliceView
                 __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
         exit(SHUResult_ErrAssertion);                                                  \
     }
+#else
+#define SHU_Assert(...)
 #endif
 
 /// @brief Terminates the process if ptr is NULL.
