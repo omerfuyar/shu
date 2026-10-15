@@ -50,7 +50,7 @@ Be aware that all shu... libraries use assertions for
 unrecoverable, contract validation errors Like null values,
 out of range indexing, invalid parameter data etc.
 
-Again all shu... libraries use SHUReturn for recoverable,
+Again all shu... libraries use SHUResult for recoverable,
 external errors like syscall errors, hardware issues etc.
 */
 
@@ -164,7 +164,7 @@ typedef struct SHUSlice
     usz size;
 } SHUSlice;
 
-/// @brief A read-only view over a span of memory. Same shape as SHUSlice but neither the pointer nor the pointer can be written through it. See csv.
+/// @brief A read-only view over a span of memory. Same shape as SHUSlice but neither the pointer nor the data can be written through it. See csv.
 typedef const struct SHUSliceView
 {
     const void *const data;
@@ -186,7 +186,7 @@ typedef const struct SHUSliceView
 #define cs0 cs(NULL, 0)
 
 /// @brief A zero slice view.
-#define csv0 csv(cs0);
+#define csv0 csv(cs0)
 
 /// @brief Selects the minimum of two values. Be aware that a and b is evaluated for more than 1 times in this expression.
 #define SHUMin(a, b) ((a) < (b) ? (a) : (b))
@@ -235,15 +235,19 @@ typedef const struct SHUSliceView
 /// @param condition Condition that must hold. Nothing happens if it's true.
 /// @param format Formatted message to log if the condition fails.
 /// @param ... Format parameters.
-#define SHU_Assert(condition, format, ...)                                             \
-    if (!(condition))                                                                  \
-    {                                                                                  \
-        fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : " format "\n", \
-                __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
-        exit(SHUResult_ErrAssertion);                                                  \
-    }
+#define SHU_Assert(condition, format, ...)                                                 \
+    do                                                                                     \
+    {                                                                                      \
+        if (!(condition))                                                                  \
+        {                                                                                  \
+            fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : " format "\n", \
+                    __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
+            exit(SHUResult_ErrAssertion);                                                  \
+        }                                                                                  \
+    } while (0)
 #else
-#define SHU_Assert(...)
+// the condition is not evaluated, but what it names is still used, so variables kept for assertions do not warn
+#define SHU_Assert(condition, ...) ((void)sizeof(!(condition)))
 #endif
 
 /// @brief Terminates the process if ptr is NULL.
@@ -252,7 +256,17 @@ typedef const struct SHUSliceView
 
 /// @brief Terminates the process if result is not SHUResult_Ok. Use at call sites where a failure is unexpected and unrecoverable.
 /// @param result Expression of type SHUResult to check.
-#define SHU_AssertResult(result) SHU_Assert(!(result), "Result of " #result " (%d) is not SHUResult_Ok.", (result))
+/// @note result is evaluated once, even when SHU_NO_ASSERT is defined, so it can be a call.
+#ifndef SHU_NO_ASSERT
+#define SHU_AssertResult(result)                                                                \
+    do                                                                                          \
+    {                                                                                           \
+        int ___shuassert = (int)(result);                                                       \
+        SHU_Assert(!___shuassert, "Result of " #result " (%d) is not SHUResult_Ok.", ___shuassert); \
+    } while (0)
+#else
+#define SHU_AssertResult(result) ((void)(result))
+#endif
 
 /// @brief Evaluates result once and, if it is not SHUResult_Ok, runs the optional cleanup statements and returns it from the enclosing function.
 /// @param result Expression of type SHUResult to check.
