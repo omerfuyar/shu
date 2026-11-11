@@ -117,42 +117,39 @@ typedef size_t usz;
 
 /// @brief Common result/error code returned by shu... functions. SHUResult_Ok (0) means success; every other value is truthy and can be used directly as a boolean failure check (eg. `if (SHU_SomeFunction(...))`).
 /// @note See assertion SHU_Assert... functions for assertions.
+// the results, in order; SHUResult and SHUResult_String are both written from this list
+#define SHU_RESULTS(X) \
+    X(Ok) \
+    X(Pending) \
+    X(Finished) \
+    X(Err) \
+    X(ErrAssertion) \
+    X(ErrNotFound) \
+    X(ErrBadData) \
+    X(ErrFile) \
+    X(ErrInternal) \
+    X(ErrAllocation) \
+    X(ErrOverflow) \
+    X(ErrIndexOutOfBounds) \
+    X(ErrNullPointer) \
+    X(ErrNetwork) \
+    X(ErrPrivileges)
+
 typedef enum SHUResult
 {
-    SHUResult_Ok = 0,
-    SHUResult_Pending,
-    SHUResult_Finished,
-    SHUResult_Err,
-    SHUResult_ErrAssertion,
-    SHUResult_ErrNotFound,
-    SHUResult_ErrBadData,
-    SHUResult_ErrFile,
-    SHUResult_ErrInternal,
-    SHUResult_ErrAllocation,
-    SHUResult_ErrOverflow,
-    SHUResult_ErrIndexOutOfBounds,
-    SHUResult_ErrNullPointer,
-    SHUResult_ErrNetwork,
-    SHUResult_ErrPrivileges,
+#define SHU_RESULT_VALUE(name) SHUResult_##name,
+    SHU_RESULTS(SHU_RESULT_VALUE)
+#undef SHU_RESULT_VALUE
 } SHUResult;
 
-/// @brief String of the result value. Be aware that parameter result is evaluated for more than 1 times in this expression.
-#define SHUResult_String(result) ((result) == SHUResult_Ok                    ? "SHUResult_Ok"                  \
-                                  : (result) == SHUResult_Pending             ? "SHUResult_Pending"             \
-                                  : (result) == SHUResult_Finished            ? "SHUResult_Finished"            \
-                                  : (result) == SHUResult_Err                 ? "SHUResult_Err"                 \
-                                  : (result) == SHUResult_ErrAssertion        ? "SHUResult_ErrAssertion"        \
-                                  : (result) == SHUResult_ErrNotFound         ? "SHUResult_ErrNotFound"         \
-                                  : (result) == SHUResult_ErrBadData          ? "SHUResult_ErrBadData"          \
-                                  : (result) == SHUResult_ErrFile             ? "SHUResult_ErrFile"             \
-                                  : (result) == SHUResult_ErrInternal         ? "SHUResult_ErrInternal"         \
-                                  : (result) == SHUResult_ErrAllocation       ? "SHUResult_ErrAllocation"       \
-                                  : (result) == SHUResult_ErrOverflow         ? "SHUResult_ErrOverflow"         \
-                                  : (result) == SHUResult_ErrIndexOutOfBounds ? "SHUResult_ErrIndexOutOfBounds" \
-                                  : (result) == SHUResult_ErrNullPointer      ? "SHUResult_ErrNullPointer"      \
-                                  : (result) == SHUResult_ErrNetwork          ? "SHUResult_ErrNetwork"          \
-                                  : (result) == SHUResult_ErrPrivileges       ? "SHUResult_ErrPrivileges"       \
-                                                                              : "UNKNOWN_SHU_RESULT") //! dont forget to add here
+/// @brief String of the result value.
+#define SHU_RESULT_STRING(name) (shuResult_ == SHUResult_##name) ? "SHUResult_" #name:
+#define SHUResult_String(result) SHUI_ResultString((int)(result))
+
+static inline const char *SHUI_ResultString(int shuResult_)
+{
+    return SHU_RESULTS(SHU_RESULT_STRING) "UNKNOWN_SHU_RESULT";
+}
 
 /// @brief An attribute to warn an unused return value used as 'SHUWUR SHUResult foo(...)'
 #define SHUWUR __attribute__((warn_unused_result))
@@ -211,7 +208,15 @@ typedef const struct SHUSliceView
         }                                                                       \
     } while (0)
 #else
-#define SHU_Log(...)
+// nothing is logged, but a code other than 0 still terminates the application
+#define SHU_Log(terminate, ...) \
+    do                          \
+    {                           \
+        if (terminate)          \
+        {                       \
+            exit(terminate);    \
+        }                       \
+    } while (0)
 #endif
 
 /// @brief Logs an informational message. Never terminates the process.
@@ -231,7 +236,7 @@ typedef const struct SHUSliceView
 #define SHU_LogError(code, format, ...) SHU_Log((code), "\x1b[31mERROR\x1b[0m", format, ##__VA_ARGS__)
 
 #ifndef SHU_NO_ASSERT
-/// @brief Logs and terminates the process (exit code SHUResult_ErrAssertion) if condition is false.
+/// @brief Logs and aborts the process if condition is false, so a debugger stops there. Functions registered with atexit do not run.
 /// @param condition Condition that must hold. Nothing happens if it's true.
 /// @param format Formatted message to log if the condition fails.
 /// @param ... Format parameters.
@@ -242,7 +247,7 @@ typedef const struct SHUSliceView
         {                                                                                  \
             fprintf(SHU_LOG_STREAM, "%s:%d:%s : \x1b[1m[ASSERTION]\x1b[0m : " format "\n", \
                     __FILE__, __LINE__, __func__, ##__VA_ARGS__);                          \
-            exit(SHUResult_ErrAssertion);                                                  \
+            abort();                                                                       \
         }                                                                                  \
     } while (0)
 #else
@@ -261,8 +266,8 @@ typedef const struct SHUSliceView
 #define SHU_AssertResult(result)                                                                \
     do                                                                                          \
     {                                                                                           \
-        int ___shuassert = (int)(result);                                                       \
-        SHU_Assert(!___shuassert, "Result of " #result " (%d) is not SHUResult_Ok.", ___shuassert); \
+        int shuAssert_ = (int)(result);                                                         \
+        SHU_Assert(!shuAssert_, "Result of " #result " (%d) is not SHUResult_Ok.", shuAssert_);     \
     } while (0)
 #else
 #define SHU_AssertResult(result) ((void)(result))
@@ -275,11 +280,11 @@ typedef const struct SHUSliceView
 #define SHU_ReturnResult(result, ...) \
     do                                \
     {                                 \
-        SHUResult ___shures = result; \
-        if (___shures)                \
+        SHUResult shuResult_ = result; \
+        if (shuResult_)                \
         {                             \
             __VA_ARGS__               \
-            return ___shures;         \
+            return shuResult_;         \
         }                             \
     } while (0)
 
