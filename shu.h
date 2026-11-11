@@ -69,6 +69,11 @@ external errors like syscall errors, hardware issues etc.
 #define _GNU_SOURCE
 #endif
 
+// macOS hides its own names, such as st_mtimespec, when _XOPEN_SOURCE is defined without this
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE
+#endif
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
